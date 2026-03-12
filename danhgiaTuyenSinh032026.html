@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đánh Giá Hiệu Suất – Bộ Phận Tuyển Sinh</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --navy: #0B2545;
+  --blue: #1565C0;
+  --blue2: #1E88E5;
+  --teal: #00897B;
+  --amber: #F57F17;
+  --green: #2E7D32;
+  --red: #C62828;
+  --purple: #6A1B9A;
+  --slate: #455A64;
+  --bg: #F0F4F8;
+  --card: #FFFFFF;
+  --border: #CFD8DC;
+  --text: #1A2332;
+  --muted: #607D8B;
+  --tvts: #1565C0;
+  --admin: #00695C;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── HEADER ── */
+.app-header{
+  background:linear-gradient(135deg,#0B2545 0%,#1565C0 60%,#1E88E5 100%);
+  padding:20px 32px 0;
+  position:relative;overflow:hidden;
+}
+.app-header::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hrow1{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.hbrand{display:flex;align-items:center;gap:14px}
+.hlogo{width:44px;height:44px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid rgba(255,255,255,.2)}
+.hbrand-t{font-size:13px;font-weight:700;color:#fff;letter-spacing:.5px;opacity:.9}
+.hbrand-s{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
+.hactions{display:flex;gap:8px}
+.btn{border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:700;font-family:'Be Vietnam Pro',sans-serif;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.btn-ghost:hover{background:rgba(255,255,255,.22)}
+.btn-white{background:#fff;color:var(--navy)}
+.btn-white:hover{background:#e3f2fd}
+
+/* ── ROLE TABS ── */
+.role-tabs{display:flex;gap:0;margin-top:20px;position:relative;z-index:1}
+.role-tab{
+  padding:12px 28px;font-size:13px;font-weight:700;cursor:pointer;
+  border-radius:12px 12px 0 0;transition:all .2s;
+  color:rgba(255,255,255,.6);background:transparent;border:none;
+  font-family:'Be Vietnam Pro',sans-serif;letter-spacing:.3px;
+}
+.role-tab.active-tvts{background:#fff;color:var(--tvts);}
+.role-tab.active-admin{background:#fff;color:var(--admin);}
+.role-tab:not(.active-tvts):not(.active-admin):hover{color:#fff;background:rgba(255,255,255,.1)}
+
+/* ── MAIN ── */
+.main{max-width:1100px;margin:0 auto;padding:24px 20px 48px}
+
+/* ── INFO BAR ── */
+.info-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:20px}
+.info-cell{display:flex;flex-direction:column;gap:4px}
+.info-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+.info-inp{border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-family:'Be Vietnam Pro',sans-serif;color:var(--text);background:#fff;outline:none;transition:border .2s;width:100%}
+.info-inp:focus{border-color:var(--blue2)}
+
+/* ── TOGGLES ── */
+.toggle-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.tog-card{
+  display:flex;align-items:center;gap:10px;
+  background:#fff;border:1.5px solid var(--border);
+  border-radius:10px;padding:10px 16px;cursor:pointer;
+  transition:all .2s;user-select:none;
+}
+.tog-card.on-he{border-color:#F57F17;background:#FFF8E1}
+.tog-card.on-cn{border-color:#6A1B9A;background:#F3E5F5}
+.tog-label{font-size:12px;font-weight:700;color:var(--text)}
+.tog-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.tog-switch{width:36px;height:20px;background:#CFD8DC;border-radius:10px;position:relative;transition:background .2s;flex-shrink:0}
+.tog-switch::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.tog-card.on-he .tog-switch,.tog-card.on-cn .tog-switch{background:var(--amber)}
+.tog-card.on-cn .tog-switch{background:var(--purple)}
+.tog-card.on-he .tog-switch::after,.tog-card.on-cn .tog-switch::after{left:18px}
+
+/* ── DASHBOARD ── */
+.dashboard{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.dash-card{background:#fff;border-radius:12px;padding:16px;border:1.5px solid var(--border);text-align:center;position:relative;overflow:hidden}
+.dash-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.dash-card.c-tot::before{background:var(--slate)}
+.dash-card.c-earn::before{background:var(--blue)}
+.dash-card.c-ded::before{background:var(--red)}
+.dash-card.c-net::before{background:var(--green)}
+.dash-val{font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace;margin-top:4px}
+.dash-card.c-tot .dash-val{color:var(--slate)}
+.dash-card.c-earn .dash-val{color:var(--blue)}
+.dash-card.c-ded .dash-val{color:var(--red)}
+.dash-card.c-net .dash-val{color:var(--green)}
+.dash-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+.rating-pill{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:800;margin-top:8px}
+.r-good{background:#E8F5E9;color:#1B5E20}
+.r-ok{background:#E3F2FD;color:#0D47A1}
+.r-bad{background:#FFEBEE;color:#B71C1C}
+
+/* ── WEIGHT BAR ── */
+.wbar-wrap{background:#fff;border-radius:12px;padding:14px 18px;margin-bottom:20px;border:1.5px solid var(--border)}
+.wbar-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+.wbar{display:flex;border-radius:6px;overflow:hidden;height:28px}
+.wbar-seg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;transition:all .4s;overflow:hidden;white-space:nowrap}
+.ws1{background:#1565C0}
+.ws2{background:#00897B}
+.ws3{background:#455A64}
+.ws4{background:#37474F}
+.ws5{background:#F57F17}
+.ws6{background:#6A1B9A}
+.wbar-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.wleg{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);font-weight:600}
+.wleg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* ── SECTION ── */
+.section{background:#fff;border-radius:14px;border:1.5px solid var(--border);margin-bottom:14px;overflow:hidden}
+.sec-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;cursor:pointer;user-select:none;
+  border-bottom:1.5px solid transparent;transition:all .2s;
+}
+.sec-head:hover{background:#F8FAFC}
+.sec-head.open{border-bottom-color:var(--border)}
+.sec-htitle{display:flex;align-items:center;gap:10px}
+.sec-num{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0}
+.sec-name{font-size:14px;font-weight:700;color:var(--text)}
+.sec-pts{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.sec-right{display:flex;align-items:center;gap:10px}
+.sec-score{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700}
+.sec-chevron{font-size:12px;color:var(--muted);transition:transform .2s}
+.sec-head.open .sec-chevron{transform:rotate(180deg)}
+.sec-body{display:none;padding:16px 20px}
+.sec-body.open{display:block}
+
+/* ── SUB-CRITERIA ── */
+.sub-crit{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #F0F4F8}
+.sub-crit:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.sub-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:12px}
+.sub-name{font-size:13px;font-weight:700;color:var(--text);flex:1}
+.sub-std{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.5}
+.sub-maxbadge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;background:#EEF2FF;color:#3730A3;white-space:nowrap;flex-shrink:0}
+.input-row{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.igrp{display:flex;flex-direction:column;gap:4px;min-width:140px;flex:1}
+.igrp-wide{flex:2}
+.ilbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.if{border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:13px;font-family:'Be Vietnam Pro',sans-serif;color:var(--text);outline:none;transition:border .2s;background:#fff;width:100%}
+.if:focus{border-color:var(--blue2)}
+.if.vio{border-color:#FFCDD2;background:#FFF8F8}
+.if.vio:focus{border-color:var(--red)}
+.result-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.res-box{flex:1;min-width:90px;border-radius:8px;padding:8px 12px;text-align:center}
+.res-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;opacity:.7}
+.res-val{font-size:15px;font-weight:800;font-family:'JetBrains Mono',monospace;margin-top:2px}
+.rb-earn{background:#E3F2FD;color:#0D47A1}
+.rb-ded{background:#FFEBEE;color:#C62828}
+.rb-net{background:#E8F5E9;color:#1B5E20}
+.rb-pct{background:#FFF8E1;color:#E65100}
+.note-inp{width:100%;margin-top:8px;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:12px;font-family:'Be Vietnam Pro',sans-serif;color:var(--muted);resize:none;outline:none;transition:border .2s}
+.note-inp:focus{border-color:var(--blue2)}
+
+/* single-criterion section (no subsections) */
+.single-crit .input-row{margin-top:0}
+
+/* ── COLORS per role ── */
+body.role-tvts .sec-num{background:var(--tvts)}
+body.role-tvts .sec-pts{background:#E3F2FD;color:var(--tvts)}
+body.role-tvts .sec-score{color:var(--tvts)}
+body.role-admin .sec-num{background:var(--admin)}
+body.role-admin .sec-pts{background:#E0F2F1;color:var(--admin)}
+body.role-admin .sec-score{color:var(--admin)}
+body.role-tvts .role-accent{color:var(--tvts)}
+body.role-admin .role-accent{color:var(--admin)}
+body.role-tvts .ws1{background:var(--tvts)}
+body.role-admin .ws1{background:var(--admin)}
+
+/* ── FOOTER ACTIONS ── */
+.footer-bar{
+  position:sticky;bottom:0;background:rgba(255,255,255,.95);
+  backdrop-filter:blur(10px);border-top:1.5px solid var(--border);
+  padding:12px 20px;display:flex;gap:10px;justify-content:flex-end;
+  z-index:100;
+}
+.btn-xl{padding:10px 22px;font-size:13px;border-radius:10px}
+.btn-primary-tvts{background:var(--tvts);color:#fff}
+.btn-primary-tvts:hover{background:#0D47A1}
+.btn-primary-admin{background:var(--admin);color:#fff}
+.btn-primary-admin:hover{background:#004D40}
+.btn-danger{background:#FFEBEE;color:var(--red)}
+.btn-danger:hover{background:#FFCDD2}
+
+/* ── PRINT ── */
+@media print{.app-header .hactions,.toggle-bar,.footer-bar{display:none!important}.sec-body{display:block!important}}
+
+/* disabled section */
+.section.disabled{opacity:.45;pointer-events:none}
+.section.disabled .sec-head{cursor:default}
+</style>
+</head>
+<body class="role-tvts">
+
+<div class="app-header">
+  <div class="hrow1">
+    <div class="hbrand">
+      <div class="hlogo">📋</div>
+      <div>
+        <div class="hbrand-t" id="h-title">ĐÁNH GIÁ HIỆU SUẤT – TƯ VẤN TUYỂN SINH</div>
+        <div class="hbrand-s">Bộ phận Tuyển sinh · Đánh giá hàng tháng</div>
+      </div>
+    </div>
+    <div class="hactions">
+      <button class="btn btn-ghost" onclick="window.print()">🖨️ In</button>
+      <button class="btn btn-ghost" onclick="resetAll()">🔄 Làm mới</button>
+      <button class="btn btn-white" onclick="exportExcel()">📊 Xuất Excel</button>
+    </div>
+  </div>
+  <div class="role-tabs">
+    <button class="role-tab active-tvts" id="tab-tvts" onclick="switchRole('tvts')">👤 Tư vấn Tuyển sinh</button>
+    <button class="role-tab" id="tab-admin" onclick="switchRole('admin')">🗂️ Admin Tuyển sinh</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- INFO -->
+  <div class="info-grid" style="margin-top:20px">
+    <div class="info-cell">
+      <span class="info-lbl">Họ và tên</span>
+      <input class="info-inp" id="i-name" placeholder="Nguyễn Văn A">
+    </div>
+    <div class="info-cell">
+      <span class="info-lbl">Tháng / Năm</span>
+      <input class="info-inp" id="i-month" type="month">
+    </div>
+    <div class="info-cell">
+      <span class="info-lbl">Người đánh giá</span>
+      <input class="info-inp" id="i-rev" placeholder="Trưởng phòng Tuyển sinh">
+    </div>
+    <div class="info-cell">
+      <span class="info-lbl">Trường / Cơ sở</span>
+      <input class="info-inp" id="i-dept" placeholder="Trường / Cơ sở">
+    </div>
+  </div>
+
+  <!-- TOGGLES -->
+  <div class="toggle-bar" style="margin-top:14px" id="toggle-bar">
+    <!-- rendered by JS -->
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="dashboard">
+    <div class="dash-card c-tot">
+      <div class="dash-lbl">Điểm tối đa</div>
+      <div class="dash-val" id="d-tot">100</div>
+    </div>
+    <div class="dash-card c-earn">
+      <div class="dash-lbl">Điểm đạt được</div>
+      <div class="dash-val" id="d-earn">0</div>
+    </div>
+    <div class="dash-card c-ded">
+      <div class="dash-lbl">Điểm bị trừ</div>
+      <div class="dash-val" id="d-ded">0</div>
+    </div>
+    <div class="dash-card c-net">
+      <div class="dash-lbl">Điểm thực nhận</div>
+      <div class="dash-val" id="d-net">0</div>
+      <div id="d-rpill"></div>
+    </div>
+  </div>
+
+  <!-- WEIGHT BAR -->
+  <div class="wbar-wrap">
+    <div class="wbar-title">Phân bổ trọng số</div>
+    <div class="wbar" id="wbar"></div>
+    <div class="wbar-legend" id="wleg"></div>
+  </div>
+
+  <!-- KPI SECTIONS -->
+  <div id="kpi-sections"></div>
+
+</div>
+
+<div class="footer-bar">
+  <button class="btn btn-xl btn-danger" onclick="resetAll()">🔄 Làm mới</button>
+  <button class="btn btn-xl btn-white" onclick="window.print()">🖨️ In / PDF</button>
+  <button class="btn btn-xl btn-primary-tvts" id="btn-export" onclick="exportExcel()">📊 Xuất Excel</button>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+// ══════════════════════════════════════════════════════════════
+//  DATA DEFINITIONS
+// ══════════════════════════════════════════════════════════════
+const ROLES = {
+
+  tvts: {
+    label: 'Tư vấn Tuyển sinh',
+    toggles: ['he','cn'],
+    sections: [
+      {
+        id:'s1', num:'1', name:'Ghi danh mới', baseMax:30,
+        sub: [
+          {
+            id:'gdm', name:'Số HS ghi danh mới theo tháng (KPI cá nhân)',
+            std:'Tỷ lệ HS thực đạt / KPI tháng × 12 điểm',
+            baseMax:12, type:'ratio',
+            inputs:[
+              {id:'gdm_kpi',lbl:'KPI tháng (chỉ tiêu)',vio:false},
+              {id:'gdm_act',lbl:'Thực tế đạt được',vio:false},
+            ]
+          },
+          {
+            id:'leads', name:'Thời gian xử lý leads',
+            std:'Trong giờ: ≤30 phút · Ngoài giờ: trước 9h00 sáng hôm sau',
+            baseMax:9, type:'deduct', dp:2,
+            inputs:[{id:'leads_v',lbl:'Số lần vi phạm',vio:true}]
+          },
+          {
+            id:'crm', name:'Cập nhật dữ liệu HS vào CRM',
+            std:'Đúng quy trình · Đầy đủ thông tin · Không quá 24h sau khi liên hệ',
+            baseMax:9, type:'deduct', dp:2,
+            inputs:[{id:'crm_v',lbl:'Số lần vi phạm',vio:true}]
+          },
+        ]
+      },
+      {
+        id:'s2', num:'2', name:'Tái ghi danh', baseMax:40,
+        sub: [
+          {
+            id:'phhs', name:'Tiếp nhận & xử lý phản hồi PHHS',
+            std:'Trong giờ: ≤30 phút · Ngoài giờ: trước 9h00 sáng hôm sau',
+            baseMax:16, type:'deduct', dp:2,
+            inputs:[{id:'phhs_v',lbl:'Số lần vi phạm',vio:true}]
+          },
+          {
+            id:'tb', name:'Thông báo kịp thời & đầy đủ & đúng thông tin đến PHHS',
+            std:'Thực hiện đúng quy trình · Không ghi nhận phản ánh từ PHHS',
+            baseMax:12, type:'deduct', dp:2,
+            inputs:[{id:'tb_v',lbl:'Số lần vi phạm',vio:true}]
+          },
+          {
+            id:'pa', name:'Phản ánh tiêu cực nghiêm trọng liên quan đến cá nhân TVTS / cơ sở',
+            std:'Không ghi nhận phản ánh từ PHHS',
+            baseMax:12, type:'deduct', dp:2,
+            inputs:[{id:'pa_v',lbl:'Số phản ánh nghiêm trọng',vio:true}]
+          },
+        ]
+      },
+      {
+        id:'s3', num:'3', name:'Đón trả – Vận hành cơ sở & Phối hợp các BP', baseMax:10,
+        single:true,
+        std:'Không ghi nhận phản ánh từ PHHS / BGH / đồng nghiệp',
+        type:'deduct', dp:2,
+        inputs:[{id:'dt_v',lbl:'Số lần vi phạm',vio:true}]
+      },
+      {
+        id:'s4', num:'4', name:'Tinh thần thái độ tác phong làm việc', baseMax:10,
+        single:true,
+        std:'Không ghi nhận phản ánh từ PHHS / BGH / đồng nghiệp',
+        type:'deduct', dp:2,
+        inputs:[{id:'tt_v',lbl:'Số lần vi phạm',vio:true}]
+      },
+      {
+        id:'s5', num:'5', name:'Công việc phát sinh khác', baseMax:10,
+        single:true,
+        std:'Hoàn thành đúng hạn, đúng yêu cầu',
+        type:'deduct', dp:2,
+        inputs:[{id:'ps_v',lbl:'Số đầu việc chưa đạt / trễ hạn',vio:true}],
+        isDynamic: true, dynamicKey:'ps'
+      },
+      {
+        id:'s6', num:'6', name:'Công nợ học phí', baseMax:5,
+        single:true, toggleKey:'cn',
+        std:'≥95% PH đóng đúng hạn · Không tính TH BGĐ đã duyệt gia hạn',
+        type:'ratio_cn',
+        inputs:[
+          {id:'cn_t',lbl:'Tổng PH có công nợ',vio:false},
+          {id:'cn_d',lbl:'Số PH đã đóng đúng hạn',vio:false},
+          {id:'cn_exc',lbl:'TH BGĐ duyệt gia hạn',vio:false},
+        ]
+      },
+      {
+        id:'s7', num:'7', name:'Chương trình Hè', baseMax:5,
+        single:true, toggleKey:'he',
+        std:'Số HS thực đạt / KPI chương trình Hè · Đợt 1: 31/05 · Đợt 2 (lũy kế): 30/06',
+        type:'ratio',
+        inputs:[
+          {id:'he_kpi',lbl:'KPI Hè (chỉ tiêu)',vio:false},
+          {id:'he_act',lbl:'Thực tế đạt được',vio:false},
+        ]
+      },
+    ]
+  },
+
+  admin: {
+    label: 'Admin Tuyển sinh',
+    toggles: ['he'],
+    sections: [
+      {
+        id:'as1', num:'1', name:'Ghi danh mới (theo tổng trường)', baseMax:30,
+        sub: [
+          {
+            id:'agdm', name:'Số HS ghi danh mới theo tháng (KPI tổng trường)',
+            std:'Tỷ lệ HS thực đạt / KPI tháng × 12 điểm',
+            baseMax:12, type:'ratio',
+            inputs:[
+              {id:'agdm_kpi',lbl:'KPI tháng (chỉ tiêu)',vio:false},
+              {id:'agdm_act',lbl:'Thực tế đạt được',vio:false},
+            ]
+          },
+          {
+            id:'afb', name:'Theo dõi, phản hồi inbox fanpage, xử lý & phân chia leads các kênh',
+            std:'Trong giờ: ≤30 phút · Ngoài giờ: trước 8h00 sáng hôm sau',
+            baseMax:9, type:'deduct', dp:2,
+            inputs:[{id:'afb_v',lbl:'Số lần vi phạm',vio:true}]
+          },
+          {
+            id:'atxl', name:'Thi xếp lớp (tổ chức, hồ sơ, bài thi, điểm thi)',
+            std:'Thực hiện đúng quy trình · Không ghi nhận phản ánh từ PHHS',
+            baseMax:9, type:'deduct', dp:2,
+            inputs:[{id:'atxl_v',lbl:'Số lần vi phạm',vio:true}]
+          },
+        ]
+      },
+      {
+        id:'as2', num:'2', name:'Tái ghi danh (theo tổng trường)', baseMax:40,
+        sub: [
+          {
+            id:'aphhs', name:'Tiếp nhận & xử lý phản hồi PHHS',
+            std:'Trong giờ: ≤30 phút · Ngoài giờ: trước 8h00 sáng hôm sau',
+            baseMax:20, type:'deduct', dp:2,
+            inputs:[{id:'aphhs_v',lbl:'Số lần vi phạm',vio:true}]
+          },
+          {
+            id:'ahs', name:'Hồ sơ học sinh',
+            std:'Thực hiện đúng quy trình · Không ghi nhận phản ánh từ PHHS',
+            baseMax:12, type:'deduct', dp:2,
+            inputs:[{id:'ahs_v',lbl:'Số lần vi phạm',vio:true}]
+          },
+          {
+            id:'adf', name:'Đồng phục & giáo trình',
+            std:'Thực hiện đúng quy trình · Không ghi nhận phản ánh từ PHHS',
+            baseMax:8, type:'deduct', dp:2,
+            inputs:[{id:'adf_v',lbl:'Số lần vi phạm',vio:true}]
+          },
+        ]
+      },
+      {
+        id:'as3', num:'3', name:'Đón trả – Vận hành cơ sở & Phối hợp các BP', baseMax:10,
+        single:true,
+        std:'Không ghi nhận phản ánh từ PHHS / BGH / đồng nghiệp',
+        type:'deduct', dp:2,
+        inputs:[{id:'adt_v',lbl:'Số lần vi phạm',vio:true}]
+      },
+      {
+        id:'as4', num:'4', name:'Tinh thần thái độ tác phong làm việc', baseMax:10,
+        single:true,
+        std:'Không ghi nhận phản ánh từ PHHS / BGH / đồng nghiệp',
+        type:'deduct', dp:2,
+        inputs:[{id:'att_v',lbl:'Số lần vi phạm',vio:true}]
+      },
+      {
+        id:'as5', num:'5', name:'Công việc phát sinh khác', baseMax:10,
+        single:true,
+        std:'Hoàn thành đúng hạn, đúng yêu cầu',
+        type:'deduct', dp:2,
+        inputs:[{id:'aps_v',lbl:'Số đầu việc chưa đạt / trễ hạn',vio:true}],
+        isDynamic: true, dynamicKey:'ps'
+      },
+      {
+        id:'as6', num:'6', name:'Chương trình Hè', baseMax:5,
+        single:true, toggleKey:'he',
+        std:'Số HS thực đạt / KPI chương trình Hè · Đợt 1: 31/05 · Đợt 2 (lũy kế): 30/06',
+        type:'ratio',
+        inputs:[
+          {id:'ahe_kpi',lbl:'KPI Hè (chỉ tiêu)',vio:false},
+          {id:'ahe_act',lbl:'Thực tế đạt được',vio:false},
+        ]
+      },
+    ]
+  }
+};
+
+// Toggle config per role
+const TOGGLE_DEFS = {
+  he: { label:'Chương trình Hè', sub:'Kích hoạt tháng 3–6', cls:'on-he' },
+  cn: { label:'Công nợ học phí', sub:'Kích hoạt theo đợt thu', cls:'on-cn' },
+};
+
+// ══════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════
+let curRole = 'tvts';
+let toggleState = { he: false, cn: false };
+
+// ══════════════════════════════════════════════════════════════
+//  ROLE SWITCH
+// ══════════════════════════════════════════════════════════════
+function switchRole(role) {
+  curRole = role;
+  document.body.className = 'role-' + role;
+  $('h-title').textContent = 'ĐÁNH GIÁ HIỆU SUẤT – ' + ROLES[role].label.toUpperCase();
+  $('tab-tvts').className = 'role-tab' + (role==='tvts' ? ' active-tvts' : '');
+  $('tab-admin').className = 'role-tab' + (role==='admin' ? ' active-admin' : '');
+  $('btn-export').className = 'btn btn-xl btn-primary-' + role;
+  toggleState = { he: false, cn: false };
+  renderToggles();
+  renderSections();
+  calc();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TOGGLES
+// ══════════════════════════════════════════════════════════════
+function renderToggles() {
+  const bar = $('toggle-bar');
+  const role = ROLES[curRole];
+  bar.innerHTML = role.toggles.map(key => {
+    const d = TOGGLE_DEFS[key];
+    const on = toggleState[key];
+    return `<div class="tog-card ${on ? d.cls : ''}" onclick="toggle('${key}')">
+      <div class="tog-switch"></div>
+      <div>
+        <div class="tog-label">${d.label}</div>
+        <div class="tog-sub">${d.sub}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggle(key) {
+  toggleState[key] = !toggleState[key];
+  renderToggles();
+  updateSectionStates();
+  updateWeightBar();
+  calc();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DYNAMIC WEIGHTS
+// ══════════════════════════════════════════════════════════════
+function getWeights() {
+  const role = ROLES[curRole];
+  const he = toggleState.he;
+  const cn = toggleState.cn && role.toggles.includes('cn');
+  // ps (phát sinh) loses 5% per active toggle
+  let psBase = 10;
+  if (he) psBase -= 5;
+  if (cn) psBase -= 5;
+  return { psMax: Math.max(psBase, 0) };
+}
+
+function getSectionMax(sec) {
+  if (sec.isDynamic) return getWeights().psMax;
+  if (sec.toggleKey && !toggleState[sec.toggleKey]) return 0;
+  return sec.baseMax;
+}
+
+function getSubMax(sub) {
+  return sub.baseMax;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  WEIGHT BAR
+// ══════════════════════════════════════════════════════════════
+function updateWeightBar() {
+  const role = ROLES[curRole];
+  const segs = [];
+  const colors = ['ws1','ws2','ws3','ws4','ws5','ws6'];
+  let ci = 0;
+  role.sections.forEach(sec => {
+    const mx = getSectionMax(sec);
+    if (mx > 0) {
+      segs.push({ label: sec.name, pct: mx, cls: colors[ci % colors.length] });
+      ci++;
+    }
+  });
+  const wbar = $('wbar');
+  const wleg = $('wleg');
+  wbar.innerHTML = segs.map(s =>
+    `<div class="wbar-seg ${s.cls}" style="width:${s.pct}%" title="${s.label}: ${s.pct}đ">
+      ${s.pct >= 8 ? s.pct+'đ' : ''}
+    </div>`
+  ).join('');
+  wleg.innerHTML = segs.map(s =>
+    `<div class="wleg"><div class="wleg-dot ${s.cls}"></div>${s.label}: <b>${s.pct}đ</b></div>`
+  ).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER SECTIONS
+// ══════════════════════════════════════════════════════════════
+function renderSections() {
+  const role = ROLES[curRole];
+  const container = $('kpi-sections');
+  container.innerHTML = role.sections.map(sec => renderSection(sec)).join('');
+  updateSectionStates();
+  updateWeightBar();
+}
+
+function renderSection(sec) {
+  const mx = sec.baseMax;
+  const bodyHtml = sec.single ? renderSingleBody(sec) : renderSubBody(sec);
+  return `
+  <div class="section${sec.single ? ' single-crit' : ''}" id="sec-${sec.id}">
+    <div class="sec-head open" onclick="toggleSec('${sec.id}')">
+      <div class="sec-htitle">
+        <div class="sec-num">${sec.num}</div>
+        <div>
+          <div class="sec-name">${sec.name}</div>
+        </div>
+      </div>
+      <div class="sec-right">
+        <span class="sec-pts">${mx}đ</span>
+        <span class="sec-score" id="score-${sec.id}">0 / ${mx}</span>
+        <span class="sec-chevron">▼</span>
+      </div>
+    </div>
+    <div class="sec-body open" id="body-${sec.id}">
+      ${bodyHtml}
+    </div>
+  </div>`;
+}
+
+function renderSingleBody(sec) {
+  return `
+    <div class="sub-crit">
+      <div class="sub-head">
+        <div>
+          <div class="sub-std">${sec.std}</div>
+        </div>
+        <span class="sub-maxbadge">Tối đa: <span id="max-${sec.id}">${sec.baseMax}</span>đ</span>
+      </div>
+      <div class="input-row">
+        ${sec.inputs.map(inp => `
+          <div class="igrp">
+            <span class="ilbl">${inp.lbl}</span>
+            <input class="if${inp.vio?' vio':''}" type="number" min="0" id="${inp.id}" placeholder="0" oninput="calc()">
+          </div>`).join('')}
+      </div>
+      <div class="result-row">
+        <div class="res-box rb-earn"><div class="res-lbl">Điểm đạt</div><div class="res-val" id="re-${sec.id}">0</div></div>
+        <div class="res-box rb-ded"><div class="res-lbl">Điểm trừ</div><div class="res-val" id="rd-${sec.id}">0</div></div>
+        <div class="res-box rb-net"><div class="res-lbl">Thực nhận</div><div class="res-val" id="rn-${sec.id}">0</div></div>
+        ${sec.type==='ratio'||sec.type==='ratio_cn' ? `<div class="res-box rb-pct"><div class="res-lbl">Tỷ lệ</div><div class="res-val" id="rp-${sec.id}">—</div></div>` : ''}
+      </div>
+      <textarea class="note-inp" id="note-${sec.id}" placeholder="Ghi chú..." rows="1"></textarea>
+    </div>`;
+}
+
+function renderSubBody(sec) {
+  return sec.sub.map(sub => `
+    <div class="sub-crit">
+      <div class="sub-head">
+        <div>
+          <div class="sub-name">${sub.name}</div>
+          <div class="sub-std">${sub.std}</div>
+        </div>
+        <span class="sub-maxbadge">Tối đa: ${sub.baseMax}đ</span>
+      </div>
+      <div class="input-row">
+        ${sub.inputs.map(inp => `
+          <div class="igrp${sub.inputs.length===1?' igrp-wide':''}">
+            <span class="ilbl">${inp.lbl}</span>
+            <input class="if${inp.vio?' vio':''}" type="number" min="0" id="${inp.id}" placeholder="0" oninput="calc()">
+          </div>`).join('')}
+      </div>
+      <div class="result-row">
+        <div class="res-box rb-earn"><div class="res-lbl">Điểm đạt</div><div class="res-val" id="re-${sub.id}">0</div></div>
+        <div class="res-box rb-ded"><div class="res-lbl">Điểm trừ</div><div class="res-val" id="rd-${sub.id}">0</div></div>
+        <div class="res-box rb-net"><div class="res-lbl">Thực nhận</div><div class="res-val" id="rn-${sub.id}">0</div></div>
+        ${sub.type==='ratio' ? `<div class="res-box rb-pct"><div class="res-lbl">Tỷ lệ</div><div class="res-val" id="rp-${sub.id}">—</div></div>` : ''}
+      </div>
+      <textarea class="note-inp" id="note-${sub.id}" placeholder="Ghi chú..." rows="1"></textarea>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SECTION TOGGLE (open/close)
+// ══════════════════════════════════════════════════════════════
+function toggleSec(id) {
+  const head = document.querySelector(`#sec-${id} .sec-head`);
+  const body = $('body-'+id);
+  head.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  UPDATE SECTION DISABLED STATE
+// ══════════════════════════════════════════════════════════════
+function updateSectionStates() {
+  const role = ROLES[curRole];
+  role.sections.forEach(sec => {
+    const el = $('sec-' + sec.id);
+    if (!el) return;
+    const mx = getSectionMax(sec);
+    if (sec.toggleKey) {
+      el.classList.toggle('disabled', !toggleState[sec.toggleKey]);
+    }
+    // update dynamic max display
+    if (sec.isDynamic) {
+      const badge = el.querySelector('.sec-pts');
+      if (badge) badge.textContent = mx + 'đ';
+      const maxEl = el.querySelector(`#max-${sec.id}`);
+      if (maxEl) maxEl.textContent = mx;
+    }
+    // update score display max
+    const scoreEl = $('score-' + sec.id);
+    if (scoreEl) {
+      const cur = scoreEl.textContent.split('/')[0].trim();
+      scoreEl.textContent = cur + ' / ' + mx;
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  CALCULATION
+// ══════════════════════════════════════════════════════════════
+function v(id) { return parseFloat($(id)?.value) || 0; }
+function clamp(x, mn, mx) { return Math.min(Math.max(x, mn), mx); }
+
+function calcSub(sub) {
+  const mx = sub.baseMax;
+  if (sub.type === 'ratio') {
+    const kpiId = sub.inputs[0].id;
+    const actId = sub.inputs[1].id;
+    const kpi = v(kpiId), act = v(actId);
+    const pct = kpi > 0 ? (act / kpi) : 0;
+    const earn = clamp(pct * mx, 0, mx);
+    const pctEl = $('rp-' + sub.id);
+    if (pctEl) pctEl.textContent = kpi > 0 ? (pct*100).toFixed(1)+'%' : '—';
+    return { earn, ded: 0, net: earn };
+  } else {
+    const vio = v(sub.inputs[0].id);
+    const ded = clamp(vio * sub.dp, 0, mx);
+    return { earn: mx, ded, net: clamp(mx - ded, 0, mx) };
+  }
+}
+
+function calcSingle(sec) {
+  const mx = getSectionMax(sec);
+  if (mx === 0) return { earn:0, ded:0, net:0 };
+
+  if (sec.type === 'ratio') {
+    const kpi = v(sec.inputs[0].id), act = v(sec.inputs[1].id);
+    const pct = kpi > 0 ? (act/kpi) : 0;
+    const earn = clamp(pct * mx, 0, mx);
+    const pctEl = $('rp-' + sec.id);
+    if (pctEl) pctEl.textContent = kpi > 0 ? (pct*100).toFixed(1)+'%' : '—';
+    return { earn, ded:0, net: earn };
+  } else if (sec.type === 'ratio_cn') {
+    const tot = v(sec.inputs[0].id);
+    const done = v(sec.inputs[1].id);
+    const exc = v(sec.inputs[2].id);
+    const denom = Math.max(tot - exc, 0);
+    const pct = denom > 0 ? (done / denom) : 0;
+    const earn = clamp(pct * mx, 0, mx);
+    const pctEl = $('rp-' + sec.id);
+    if (pctEl) pctEl.textContent = denom > 0 ? (pct*100).toFixed(1)+'%' : '—';
+    return { earn, ded:0, net: earn };
+  } else {
+    const vio = v(sec.inputs[0].id);
+    const ded = clamp(vio * (sec.dp||2), 0, mx);
+    return { earn: mx, ded, net: clamp(mx - ded, 0, mx) };
+  }
+}
+
+function setResult(id, r) {
+  const reEl = $('re-'+id), rdEl = $('rd-'+id), rnEl = $('rn-'+id);
+  if (reEl) reEl.textContent = r.earn.toFixed(1);
+  if (rdEl) rdEl.textContent = r.ded.toFixed(1);
+  if (rnEl) rnEl.textContent = r.net.toFixed(1);
+}
+
+function calc() {
+  updateSectionStates();
+  const role = ROLES[curRole];
+  let totalEarn = 0, totalDed = 0;
+
+  role.sections.forEach(sec => {
+    const mx = getSectionMax(sec);
+    let secEarn = 0, secDed = 0, secNet = 0;
+
+    if (sec.single) {
+      const r = calcSingle(sec);
+      setResult(sec.id, r);
+      secEarn = r.earn; secDed = r.ded; secNet = r.net;
+    } else {
+      sec.sub.forEach(sub => {
+        const r = calcSub(sub);
+        setResult(sub.id, r);
+        secEarn += r.earn; secDed += r.ded; secNet += r.net;
+      });
+    }
+
+    const scoreEl = $('score-' + sec.id);
+    if (scoreEl) scoreEl.textContent = secNet.toFixed(1) + ' / ' + mx;
+
+    if (!sec.toggleKey || toggleState[sec.toggleKey]) {
+      totalEarn += secEarn;
+      totalDed += secDed;
+    }
+  });
+
+  const net = clamp(totalEarn - totalDed, 0, 100);
+  $('d-earn').textContent = totalEarn.toFixed(1);
+  $('d-ded').textContent = totalDed.toFixed(1);
+  $('d-net').textContent = net.toFixed(1);
+
+  // Rating
+  let rating, cls;
+  if (net >= 95) { rating = '🌟 Tốt – Đạt'; cls = 'r-good'; }
+  else if (net >= 90) { rating = '👍 Khá'; cls = 'r-ok'; }
+  else { rating = '⚠️ Cần cải thiện'; cls = 'r-bad'; }
+  $('d-rpill').innerHTML = `<span class="rating-pill ${cls}">${rating}</span>`;
+
+  // Total max
+  let tot = 0;
+  role.sections.forEach(sec => { tot += getSectionMax(sec); });
+  $('d-tot').textContent = tot;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RESET
+// ══════════════════════════════════════════════════════════════
+function resetAll() {
+  if (!confirm('Xác nhận làm mới toàn bộ dữ liệu?')) return;
+  document.querySelectorAll('.if').forEach(el => { if (!el.readOnly) el.value = ''; });
+  document.querySelectorAll('.note-inp').forEach(el => el.value = '');
+  calc();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  EXPORT EXCEL
+// ══════════════════════════════════════════════════════════════
+function exportExcel() {
+  const role = ROLES[curRole];
+  const name = $('i-name').value || '—';
+  const month = $('i-month').value || '—';
+  const rev = $('i-rev').value || '—';
+  const dept = $('i-dept').value || '—';
+
+  const rows = [
+    [`BẢNG ĐÁNH GIÁ HIỆU SUẤT – ${role.label.toUpperCase()}`],
+    ['Họ và tên', name],
+    ['Tháng / Năm', month],
+    ['Người đánh giá', rev],
+    ['Cơ sở', dept],
+    [],
+    ['TIÊU CHÍ', 'TIÊU CHUẨN', 'ĐIỂM ĐẠT', 'ĐIỂM TRỪ', 'THỰC NHẬN', 'GHI CHÚ'],
+  ];
+
+  role.sections.forEach(sec => {
+    const mx = getSectionMax(sec);
+    rows.push([`${sec.num}. ${sec.name} (${mx}đ)`, '', '', '', '', '']);
+    if (sec.single) {
+      rows.push([
+        '  ' + (sec.std || ''),
+        '',
+        $('re-'+sec.id)?.textContent || '',
+        $('rd-'+sec.id)?.textContent || '',
+        $('rn-'+sec.id)?.textContent || '',
+        $('note-'+sec.id)?.value || '',
+      ]);
+    } else {
+      sec.sub.forEach(sub => {
+        rows.push([
+          '  ' + sub.name,
+          sub.std,
+          $('re-'+sub.id)?.textContent || '',
+          $('rd-'+sub.id)?.textContent || '',
+          $('rn-'+sub.id)?.textContent || '',
+          $('note-'+sub.id)?.value || '',
+        ]);
+      });
+    }
+  });
+
+  rows.push([]);
+  rows.push(['TỔNG KẾT', '', $('d-earn').textContent, $('d-ded').textContent, $('d-net').textContent, $('d-rpill').textContent]);
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [{wch:44},{wch:40},{wch:12},{wch:12},{wch:14},{wch:30}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Đánh giá');
+  XLSX.writeFile(wb, `DanhGia_${role.label.replace(/\s/g,'_')}_${name.replace(/\s/g,'_')}_${month}.xlsx`);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════
+$('i-month').value = new Date().toISOString().slice(0,7);
+switchRole('tvts');
+</script>
+</body>
+</html>
