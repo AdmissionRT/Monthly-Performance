@@ -958,10 +958,10 @@ function exportExcel() {
 //  GOOGLE SHEET URLS
 // ══════════════════════════════════════════════════════════════
 const SHEET_URLS = {
-  'WASS':               'https://script.google.com/a/macros/rtholdings.edu.vn/s/AKfycbxEwyqEtMzkh7GLVSppCIxkpKyfUpNETrFgiH3EGui_vIc86AFKkgLoNbTF1zDDWcJR/exec',
-  'WASS Kindergarten':  'https://script.google.com/a/macros/rtholdings.edu.vn/s/AKfycbyHzr7rKLKUd1-swkeTY3qc8VMKjn18BitkZaLmfXQ2t7503yGc6Z3BWXd-_NaQE6LD/exec',
-  'PENN':               'https://script.google.com/a/macros/rtholdings.edu.vn/s/AKfycbwl4QSbTyl380WoNZzK9vtKG4SwsoMo4qlvIkGK-O-WGgW0TCe4ggy1gyci7PIClJgBdA/exec',
-  'SISS':               'https://script.google.com/a/macros/rtholdings.edu.vn/s/AKfycbwG7ac9Sbvz1Rv6B6-RgZzTH2Lt9okgJVjjW0fDTfjoUPalyxHlC7cAmczWYPwj7QG3/exec',
+  'WASS':               'https://script.google.com/macros/s/AKfycbxEwyqEtMzkh7GLVSppCIxkpKyfUpNETrFgiH3EGui_vIc86AFKkgLoNbTF1zDDWcJR/exec',
+  'WASS Kindergarten':  'https://script.google.com/macros/s/AKfycbyHzr7rKLKUd1-swkeTY3qc8VMKjn18BitkZaLmfXQ2t7503yGc6Z3BWXd-_NaQE6LD/exec',
+  'PENN':               'https://script.google.com/macros/s/AKfycbxq8SiXYohiV4effUDN8zRVrqk7MqhxgcZmX10auPM-_ZFr7K-ISoQyQmXDoAU7MeNzeg/exec',
+  'SISS':               'https://script.google.com/macros/s/AKfycbwG7ac9Sbvz1Rv6B6-RgZzTH2Lt9okgJVjjW0fDTfjoUPalyxHlC7cAmczWYPwj7QG3/exec',
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -1089,7 +1089,7 @@ async function submitData() {
     setTimeout(() => {
       closeSubmit();
       resetAll(true);
-    }, 15000);
+    }, 2500);
 
   } catch(err) {
     showSubmitState('error', 'Có lỗi xảy ra: ' + err.message + '. Vui lòng thử lại hoặc liên hệ quản trị viên.');
