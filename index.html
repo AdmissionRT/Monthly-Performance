@@ -200,6 +200,26 @@ body.role-admin .ws1{background:var(--admin)}
 .btn-danger{background:#FFEBEE;color:var(--red)}
 .btn-danger:hover{background:#FFCDD2}
 
+
+/* ── SUBMIT ── */
+.btn-submit{background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;box-shadow:0 2px 8px rgba(46,125,50,.3)}
+.btn-submit:hover{background:linear-gradient(135deg,#2E7D32,#388E3C);transform:translateY(-1px)}
+.btn-submit:disabled{background:#B0BEC5;box-shadow:none;cursor:not-allowed;transform:none}
+.submit-overlay{display:none;position:fixed;inset:0;background:rgba(10,20,40,.6);z-index:400;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.submit-overlay.open{display:flex}
+.submit-box{background:#fff;border-radius:16px;padding:36px 40px;width:400px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.25)}
+.submit-icon{font-size:48px;margin-bottom:12px}
+.submit-title{font-size:18px;font-weight:800;color:#1B5E20;margin-bottom:8px}
+.submit-msg{font-size:13px;color:#607D8B;margin-bottom:24px;line-height:1.6}
+.submit-close{background:#E8F5E9;color:#1B5E20;border:none;border-radius:10px;padding:11px 28px;font-size:14px;font-weight:700;font-family:'Be Vietnam Pro',sans-serif;cursor:pointer;transition:all .2s}
+.submit-close:hover{background:#C8E6C9}
+.submit-err{background:#FFEBEE;border-radius:16px;padding:36px 40px;width:400px;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.25)}
+.submit-err .submit-title{color:#C62828}
+.submit-err .submit-close{background:#FFEBEE;color:#C62828}
+.submit-err .submit-close:hover{background:#FFCDD2}
+.loading-spin{display:inline-block;width:40px;height:40px;border:4px solid #E8F5E9;border-top-color:#2E7D32;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 /* ── PRINT ── */
 @media print{.app-header .hactions,.toggle-bar,.footer-bar{display:none!important}.sec-body{display:block!important}}
 
@@ -209,6 +229,16 @@ body.role-admin .ws1{background:var(--admin)}
 </style>
 </head>
 <body class="role-tvts">
+
+<!-- SUBMIT OVERLAY -->
+<div class="submit-overlay" id="submit-overlay">
+  <div id="submit-box-inner" class="submit-box">
+    <div class="submit-icon" id="s-icon">⏳</div>
+    <div class="submit-title" id="s-title">Đang gửi dữ liệu...</div>
+    <div class="submit-msg" id="s-msg">Vui lòng chờ trong giây lát</div>
+    <button class="submit-close" id="s-close" onclick="closeSubmit()" style="display:none">Đóng</button>
+  </div>
+</div>
 
 <div class="app-header">
   <div class="hrow1">
@@ -249,7 +279,13 @@ body.role-admin .ws1{background:var(--admin)}
     </div>
     <div class="info-cell">
       <span class="info-lbl">Trường / Cơ sở</span>
-      <input class="info-inp" id="i-dept" placeholder="Trường / Cơ sở">
+      <select class="info-inp" id="i-dept">
+        <option value="">-- Chọn trường --</option>
+        <option value="WASS">WASS</option>
+        <option value="WASS Kindergarten">WASS Kindergarten</option>
+        <option value="PENN">PENN</option>
+        <option value="SISS">SISS</option>
+      </select>
     </div>
   </div>
 
@@ -295,6 +331,7 @@ body.role-admin .ws1{background:var(--admin)}
   <button class="btn btn-xl btn-danger" onclick="resetAll()">🔄 Làm mới</button>
   <button class="btn btn-xl btn-white" onclick="window.print()">🖨️ In / PDF</button>
   <button class="btn btn-xl btn-primary-tvts" id="btn-export" onclick="exportExcel()">📊 Xuất Excel</button>
+  <button class="btn btn-xl btn-submit" id="btn-submit" onclick="submitData()">📤 Nộp kết quả</button>
 </div>
 
 <script>
@@ -777,14 +814,15 @@ function calcSingle(sec) {
     if (pctEl) pctEl.textContent = kpi > 0 ? (pct*100).toFixed(1)+'%' : '—';
     return { earn, ded:0, net: earn };
   } else if (sec.type === 'ratio_cn') {
-    const tot = v(sec.inputs[0].id);
-    const done = v(sec.inputs[1].id);
-    const exc = v(sec.inputs[2].id);
-    const denom = Math.max(tot - exc, 0);
-    const pct = denom > 0 ? (done / denom) : 0;
-    const earn = clamp(pct * mx, 0, mx);
+    const tot  = v(sec.inputs[0].id);  // Tổng PH có công nợ
+    const done = v(sec.inputs[1].id);  // Số PH đã đóng đúng hạn
+    const exc  = v(sec.inputs[2].id);  // TH BGĐ duyệt gia hạn
+    // Tỷ lệ đạt = (đã đóng + gia hạn BGĐ) / tổng PH
+    const pct  = tot > 0 ? ((done + exc) / tot) : 0;
+    // >=95% = full điểm | <95% = tỷ lệ / 95% x điểm tối đa
+    const earn = tot > 0 ? clamp((pct >= 0.95 ? 1 : pct / 0.95) * mx, 0, mx) : 0;
     const pctEl = $('rp-' + sec.id);
-    if (pctEl) pctEl.textContent = denom > 0 ? (pct*100).toFixed(1)+'%' : '—';
+    if (pctEl) pctEl.textContent = tot > 0 ? (pct*100).toFixed(1)+'%' : '—';
     return { earn, ded:0, net: earn };
   } else {
     const vio = v(sec.inputs[0].id);
@@ -851,10 +889,11 @@ function calc() {
 // ══════════════════════════════════════════════════════════════
 //  RESET
 // ══════════════════════════════════════════════════════════════
-function resetAll() {
-  if (!confirm('Xác nhận làm mới toàn bộ dữ liệu?')) return;
+function resetAll(silent=false) {
+  if (!silent && !confirm('Xác nhận làm mới toàn bộ dữ liệu?')) return;
   document.querySelectorAll('.if').forEach(el => { if (!el.readOnly) el.value = ''; });
   document.querySelectorAll('.note-inp').forEach(el => el.value = '');
+  if (!silent) $('i-name').value = '';
   calc();
 }
 
@@ -912,6 +951,151 @@ function exportExcel() {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Đánh giá');
   XLSX.writeFile(wb, `DanhGia_${role.label.replace(/\s/g,'_')}_${name.replace(/\s/g,'_')}_${month}.xlsx`);
+}
+
+
+// ══════════════════════════════════════════════════════════════
+//  GOOGLE SHEET URLS
+// ══════════════════════════════════════════════════════════════
+const SHEET_URLS = {
+  'WASS':               'https://script.google.com/a/macros/rtholdings.edu.vn/s/AKfycbxEwyqEtMzkh7GLVSppCIxkpKyfUpNETrFgiH3EGui_vIc86AFKkgLoNbTF1zDDWcJR/exec',
+  'WASS Kindergarten':  'https://script.google.com/a/macros/rtholdings.edu.vn/s/AKfycbyHzr7rKLKUd1-swkeTY3qc8VMKjn18BitkZaLmfXQ2t7503yGc6Z3BWXd-_NaQE6LD/exec',
+  'PENN':               'https://script.google.com/a/macros/rtholdings.edu.vn/s/AKfycbwl4QSbTyl380WoNZzK9vtKG4SwsoMo4qlvIkGK-O-WGgW0TCe4ggy1gyci7PIClJgBdA/exec',
+  'SISS':               'https://script.google.com/a/macros/rtholdings.edu.vn/s/AKfycbwG7ac9Sbvz1Rv6B6-RgZzTH2Lt9okgJVjjW0fDTfjoUPalyxHlC7cAmczWYPwj7QG3/exec',
+};
+
+// ══════════════════════════════════════════════════════════════
+//  SUBMIT TO GOOGLE SHEET
+// ══════════════════════════════════════════════════════════════
+function closeSubmit() {
+  $('submit-overlay').classList.remove('open');
+}
+
+function showSubmitState(state, msg) {
+  const icons = { loading:'⏳', success:'✅', error:'❌' };
+  const titles = { loading:'Đang gửi dữ liệu...', success:'Nộp kết quả thành công!', error:'Gửi thất bại' };
+  $('s-icon').textContent = icons[state];
+  $('s-title').textContent = titles[state];
+  $('s-msg').textContent = msg;
+  $('s-close').style.display = state !== 'loading' ? 'inline-block' : 'none';
+  const box = $('submit-box-inner');
+  box.className = state === 'error' ? 'submit-err' : 'submit-box';
+}
+
+function buildRowData() {
+  const role = ROLES[curRole];
+  const name = $('i-name').value || '';
+  const month = $('i-month').value || '';
+  const rev = $('i-rev').value || '';
+  const dept = $('i-dept').value || '';
+  const now = new Date().toLocaleString('vi-VN');
+
+  const getRn = id => parseFloat($('rn-'+id)?.textContent) || 0;
+  const getV = id => parseFloat($(id)?.value) || 0;
+
+  let row;
+  if (curRole === 'tvts') {
+    row = [
+      now, name, month, dept, rev, 'Tư vấn Tuyển sinh',
+      // GDM
+      getV('gdm_kpi'), getV('gdm_act'), getRn('gdm'),
+      getV('conv_kpi'), getV('conv_act'), getRn('conv'),
+      getV('leads_v'), getRn('leads'),
+      getV('crm_v'), getRn('crm'),
+      // TGD
+      getV('phhs_v'), getRn('phhs'),
+      getV('tb_v'), getRn('tb'),
+      getV('pa_v'), getRn('pa'),
+      // 3,4,5
+      getV('dt_v'), getRn('s3'),
+      getV('tt_v'), getRn('s4'),
+      getV('ps_v'), getRn('s5'),
+      // Hè
+      toggleState.he ? 'ON' : 'OFF',
+      toggleState.he ? getV('he_kpi') : '', toggleState.he ? getV('he_act') : '', toggleState.he ? getRn('s7') : '',
+      // CN
+      toggleState.cn ? 'ON' : 'OFF',
+      toggleState.cn ? getV('cn_t') : '', toggleState.cn ? getV('cn_d') : '', toggleState.cn ? getV('cn_exc') : '', toggleState.cn ? getRn('s6') : '',
+      // Tổng
+      $('d-tot').textContent, $('d-earn').textContent, $('d-ded').textContent, $('d-net').textContent,
+      $('d-rpill').textContent.replace(/[^\w\s–À-ỹ]/gu,'').trim(),
+      // TP đánh giá (để trống, TP tự điền trong Sheet)
+      '', '', ''
+    ];
+  } else {
+    row = [
+      now, name, month, dept, rev, 'Admin Tuyển sinh',
+      // GDM Admin
+      getV('agdm_kpi'), getV('agdm_act'), getRn('agdm'),
+      getV('afb_v'), getRn('afb'),
+      getV('atxl_v'), getRn('atxl'),
+      // TGD Admin
+      getV('aphhs_v'), getRn('aphhs'),
+      getV('ahs_v'), getRn('ahs'),
+      getV('adf_v'), getRn('adf'),
+      // 3,4,5
+      getV('adt_v'), getRn('as3'),
+      getV('att_v'), getRn('as4'),
+      getV('aps_v'), getRn('as5'),
+      // Hè
+      toggleState.he ? 'ON' : 'OFF',
+      toggleState.he ? getV('ahe_kpi') : '', toggleState.he ? getV('ahe_act') : '', toggleState.he ? getRn('as6') : '',
+      // Tổng
+      $('d-tot').textContent, $('d-earn').textContent, $('d-ded').textContent, $('d-net').textContent,
+      $('d-rpill').textContent.replace(/[^\w\s–À-ỹ]/gu,'').trim(),
+      // TP đánh giá (để trống)
+      '', '', ''
+    ];
+  }
+  return row;
+}
+
+async function submitData() {
+  // Validate
+  const name = $('i-name').value.trim();
+  const month = $('i-month').value;
+  const dept = $('i-dept').value;
+  if (!name) { alert('Vui lòng nhập Họ và tên!'); return; }
+  if (!month) { alert('Vui lòng chọn Tháng / Năm!'); return; }
+  if (!dept) { alert('Vui lòng chọn Trường / Cơ sở!'); return; }
+
+  const url = SHEET_URLS[dept];
+  if (!url) { alert('Không tìm thấy Google Sheet cho trường này!'); return; }
+
+  // Show loading
+  $('submit-overlay').classList.add('open');
+  showSubmitState('loading', 'Đang gửi dữ liệu lên Google Sheet...');
+  $('btn-submit').disabled = true;
+
+  try {
+    const payload = {
+      role: curRole,
+      row: buildRowData()
+    };
+
+    const resp = await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    // no-cors = opaque response, nếu không throw thì coi như thành công
+    showSubmitState('success',
+      `Dữ liệu của ${name} (${month}) đã được gửi lên Google Sheet trường ${dept} thành công! Trưởng phòng sẽ xem xét và điền đánh giá.`
+    );
+
+    // Xóa trắng form sau 1.5s
+    setTimeout(() => {
+      closeSubmit();
+      resetAll(true);
+    }, 2500);
+
+  } catch(err) {
+    showSubmitState('error', 'Có lỗi xảy ra: ' + err.message + '. Vui lòng thử lại hoặc liên hệ quản trị viên.');
+  } finally {
+    $('btn-submit').disabled = false;
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
