@@ -1057,6 +1057,7 @@ async function submitData() {
   // Validate
   const name = $('i-name').value.trim();
   const month = $('i-month').value;
+  const monthFmt = month ? month.split('-').reverse().join('/') : '—';
   const dept = $('i-dept').value;
   if (!name) { alert('Vui lòng nhập Họ và tên!'); return; }
   if (!month) { alert('Vui lòng chọn Tháng / Năm!'); return; }
@@ -1085,7 +1086,7 @@ async function submitData() {
 
     // no-cors = opaque response, nếu không throw thì coi như thành công
     showSubmitState('success',
-      `Dữ liệu đánh giá (${month}) của ${name} đã được ghi nhận thành công! Nội dung đánh giá sẽ được reset sau khi chọn nút ĐÓNG.`
+      `Đánh giá của ${name} (${monthFmt}) đã được ghi nhận thành công! Nội dung đánh giá sẽ được reset sau khi chọn nút ĐÓNG.`
     );
 
     // Người dùng tự nhấn Đóng để reset form
