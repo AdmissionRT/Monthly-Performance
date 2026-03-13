@@ -1067,7 +1067,7 @@ async function submitData() {
 
   // Show loading
   $('submit-overlay').classList.add('open');
-  showSubmitState('loading', 'Đang gửi dữ liệu lên Google Sheet...');
+  showSubmitState('loading', 'Đang gửi dữ liệu vào hệ thống...');
   $('btn-submit').disabled = true;
 
   try {
@@ -1085,7 +1085,7 @@ async function submitData() {
 
     // no-cors = opaque response, nếu không throw thì coi như thành công
     showSubmitState('success',
-      `Dữ liệu đánh giá tháng (${month}) của ${name} đã được ghi nhận thành công!`
+      `Dữ liệu đánh giá tháng (${monthFmt}) của ${name} đã được ghi nhận thành công. Nội dung đánh giá sẽ được reset sau khi chọn nút ĐÓNG.`
     );
 
     // Người dùng tự nhấn Đóng để reset form
