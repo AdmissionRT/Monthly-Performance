@@ -968,7 +968,9 @@ const SHEET_URLS = {
 //  SUBMIT TO GOOGLE SHEET
 // ══════════════════════════════════════════════════════════════
 function closeSubmit() {
+  const isSuccess = $('s-icon').textContent === '✅';
   $('submit-overlay').classList.remove('open');
+  if (isSuccess) resetAll(true);
 }
 
 function showSubmitState(state, msg) {
@@ -986,6 +988,7 @@ function buildRowData() {
   const role = ROLES[curRole];
   const name = $('i-name').value || '';
   const month = $('i-month').value || '';
+  const monthFmt = month ? month.split('-').reverse().join('/') : '—';
   const rev = $('i-rev').value || '';
   const dept = $('i-dept').value || '';
   const now = new Date().toLocaleString('vi-VN');
@@ -996,7 +999,7 @@ function buildRowData() {
   let row;
   if (curRole === 'tvts') {
     row = [
-      now, name, month, dept, rev, 'Tư vấn Tuyển sinh',
+      now, name, monthFmt, dept, rev, 'Tư vấn Tuyển sinh',
       // GDM
       getV('gdm_kpi'), getV('gdm_act'), getRn('gdm'),
       getV('conv_kpi'), getV('conv_act'), getRn('conv'),
@@ -1024,7 +1027,7 @@ function buildRowData() {
     ];
   } else {
     row = [
-      now, name, month, dept, rev, 'Admin Tuyển sinh',
+      now, name, monthFmt, dept, rev, 'Admin Tuyển sinh',
       // GDM Admin
       getV('agdm_kpi'), getV('agdm_act'), getRn('agdm'),
       getV('afb_v'), getRn('afb'),
@@ -1082,14 +1085,10 @@ async function submitData() {
 
     // no-cors = opaque response, nếu không throw thì coi như thành công
     showSubmitState('success',
-      `Dữ liệu của ${name} (${month}) đã được gửi lên Google Sheet trường ${dept} thành công! Trưởng phòng sẽ xem xét và điền đánh giá.`
+      `Dữ liệu đánh giá tháng (${month}) của ${name} đã được ghi nhận thành công!`
     );
 
-    // Xóa trắng form sau 1.5s
-    setTimeout(() => {
-      closeSubmit();
-      resetAll(true);
-    }, 2500);
+    // Người dùng tự nhấn Đóng để reset form
 
   } catch(err) {
     showSubmitState('error', 'Có lỗi xảy ra: ' + err.message + '. Vui lòng thử lại hoặc liên hệ quản trị viên.');
